@@ -4,15 +4,18 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
     private Map<String, Integer> mp = new HashMap<>();
     private static final int PORT = 3232; // registry port
     private BankDatabase bankDB;
+    private ArrayList<Thread> autoTransfers;
 
     private RmiServer(String address, int port) throws RemoteException, SQLException
     {
@@ -22,6 +25,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         Registry registry = LocateRegistry.createRegistry(port);
         registry.rebind("bankServer", this);
         bankDB = new BankDatabase();
+        autoTransfers = new ArrayList<>();
     }
 
     static public void main(String[] args)
@@ -172,7 +176,22 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     @Override
     public boolean setAutoTransfer(String from, String to, int val, Date date)
     {
-        return false;
+        AtomicBoolean res = new AtomicBoolean(false);
+        Thread autoTransfer = new Thread(() -> {
+            while (true)
+            {
+                try {
+                    Thread.sleep(date.getTime());
+                } catch (InterruptedException e) {
+                    res.set(false);
+                    e.printStackTrace();
+                }
+                res.set(transfer(from, to, val));
+            }
+        });
+        autoTransfers.add(autoTransfer);
+        autoTransfer.start();
+        return res.get();
     }
 
     @Override
