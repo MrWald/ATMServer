@@ -1,4 +1,5 @@
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -11,24 +12,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 {
     private Map<String, Integer> mp = new HashMap<>();
     private static final int PORT = 3232; // registry port
-    private Registry registry; // rmi registry for lookup the remote objects.
     private BankDatabase bankDB;
 
-    private RmiServer() throws RemoteException, SQLException
+    private RmiServer(String address, int port) throws RemoteException, SQLException
     {
-        String address;
-        try
-        {
-            // get the address of this host.
-            address = InetAddress.getLocalHost().getHostAddress();
-        }
-        catch (Exception e)
-        {
-            throw new RemoteException("Can't get internet address.");
-        }
-        System.out.println("This address = " + address + ", Port = " + PORT);
+        System.out.println("This address = " + address + ", Port = " + port);
         // create the registry and bind the name and object.
-        registry = LocateRegistry.createRegistry(PORT);
+        // rmi registry for lookup the remote objects.
+        Registry registry = LocateRegistry.createRegistry(port);
         registry.rebind("bankServer", this);
         bankDB = new BankDatabase();
     }
@@ -37,12 +28,17 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     {
         try
         {
-            new RmiServer();
+            // get the address of this host.
+            new RmiServer(InetAddress.getLocalHost().getHostAddress(), PORT);
         }
         catch (RemoteException e)
         {
             System.err.println("Cannot get the Server registered. Exiting" + e.getMessage());
             System.exit(1);
+        }
+        catch(UnknownHostException e)
+        {
+            System.err.println("Cannot get internet address.");
         }
         catch (SQLException e)
         {
