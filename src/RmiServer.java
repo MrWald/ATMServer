@@ -4,18 +4,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
-    private Map<String, Integer> mp = new HashMap<>();
+    private Map<String, String> mp = new HashMap<>();
     private static final int PORT = 3232; // registry port
     private BankDatabase bankDB;
-    private ArrayList<Thread> autoTransfers;
+    private Map<AutoTransfer, Thread> autoTransfers;
 
     private RmiServer(String address, int port) throws RemoteException, SQLException
     {
@@ -25,7 +22,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         Registry registry = LocateRegistry.createRegistry(port);
         registry.rebind("bankServer", this);
         bankDB = new BankDatabase();
-        autoTransfers = new ArrayList<>();
+        autoTransfers = new HashMap<>();
     }
 
     static public void main(String[] args)
@@ -180,22 +177,54 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         Thread autoTransfer = new Thread(() -> {
             while (true)
             {
-                try {
+                try
+                {
                     Thread.sleep(date.getTime());
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e)
+                {
                     res.set(false);
                     e.printStackTrace();
                 }
                 res.set(transfer(from, to, val));
             }
         });
-        autoTransfers.add(autoTransfer);
+        autoTransfers.put(new AutoTransfer(from, to, val, date), autoTransfer);
         autoTransfer.start();
         return res.get();
     }
 
     @Override
-    public Map<String, Integer> messageToPerform(String src, String out, int val, int type, Date date)
+    public String getAutoTransfers(String from)
+    {
+        StringBuilder res = new StringBuilder();
+        for (AutoTransfer at : autoTransfers.keySet())
+        {
+            if (at.getFrom().equals(from))
+            {
+                res.append("To:").append(at.getTo()).append(";Value:").append(at.getValue()).append(";Period:").append(at.getPeriod().toString()).append("\n");
+            }
+        }
+        return res.toString();
+    }
+
+    @Override
+    public boolean removeAutoTransfer(String from, String to, int val, Date date)
+    {
+        try
+        {
+            autoTransfers.get(new AutoTransfer(from, to, val, date)).join();
+            autoTransfers.remove(new AutoTransfer(from, to, val, date));
+        }
+        catch(Exception e)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public Map<String, String> messageToPerform(String src, String out, int val, int type, Date date)
     {
         mp.clear();
         switch (type)
@@ -203,68 +232,82 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             case 1:
                 if (withdrawMoney(src, val))
                 {
-                    mp.put("isSuccess", 1);
+                    mp.put("isSuccess", "1");
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
+                    mp.put("isSuccess", "0");
                 }
-                return mp;
             case 2:
                 Integer bal = getBalance(src);
-                if (bal != -1.0)
+                if (bal != null)
                 {
-                    mp.put("isSuccess", 1);
-                    mp.put("balance", bal);
+                    mp.put("isSuccess", "1");
+                    mp.put("balance", bal.toString());
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
-                    mp.put("balance", -1);
+                    mp.put("isSuccess", "0");
+                    mp.put("balance", "null");
                 }
-                return mp;
             case 3:
                 if (changePIN(src, val))
                 {
-                    mp.put("isSuccess", 1);
+                    mp.put("isSuccess", "1");
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
+                    mp.put("isSuccess", "0");
                 }
-                return mp;
             case 4:
                 if (replenishAccount(src, val))
                 {
-                    mp.put("isSuccess", 1);
+                    mp.put("isSuccess", "1");
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
+                    mp.put("isSuccess", "0");
                 }
-                return mp;
             case 5:
                 if (transfer(src, out, val))
                 {
-                    mp.put("isSuccess", 1);
+                    mp.put("isSuccess", "1");
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
+                    mp.put("isSuccess", "0");
                 }
-                return mp;
             case 6:
                 if (setAutoTransfer(src, out, val, date))
                 {
-                    mp.put("isSuccess", 1);
+                    mp.put("isSuccess", "1");
                 }
                 else
                 {
-                    mp.put("isSuccess", 0);
+                    mp.put("isSuccess", "0");
                 }
-                return mp;
-            default:
-                return mp;
+            case 7:
+                String at = getAutoTransfers(src);
+                if (at == null)
+                {
+                    mp.put("isSuccess", "0");
+                    mp.put("autoTransfers", "null");
+                }
+                else
+                {
+                    mp.put("isSuccess", "1");
+                    mp.put("autoTransfers", at);
+                }
+            case 8:
+                if (removeAutoTransfer(src, out, val, date))
+                {
+                    mp.put("isSuccess", "1");
+                }
+                else
+                {
+                    mp.put("isSuccess", "0");
+                }
         }
+        return mp;
     }
 }

@@ -11,5 +11,7 @@ public interface ReceiveMessageInterface extends Remote
     boolean replenishAccount(String cardNumber, int val) throws RemoteException;
     boolean transfer(String from, String to, int val) throws RemoteException;
     boolean setAutoTransfer(String from, String to, int val, Date date) throws RemoteException;
-    Map<String, Integer> messageToPerform(String src, String out, int amount, int type, Date date) throws RemoteException;
+    String getAutoTransfers(String from) throws RemoteException;
+    boolean removeAutoTransfer(String from, String to, int val, Date date) throws RemoteException;
+    Map<String, String> messageToPerform(String src, String out, int amount, int type, Date date) throws RemoteException;
 }
