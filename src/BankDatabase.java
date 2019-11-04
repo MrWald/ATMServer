@@ -16,7 +16,7 @@ class BankDatabase
     String[] getClientData(String cardNum) throws SQLException
     {
         Statement statement = connection.createStatement();
-        ResultSet res = statement.executeQuery("SELECT * FROM accounts WHERE number='" + cardNum + "'");
+        ResultSet res = statement.executeQuery("SELECT PIN, username, balance, limit FROM accounts WHERE number='" + cardNum + "'");
         if(!res.next())
             return null;
         String[] data = new String[4];
