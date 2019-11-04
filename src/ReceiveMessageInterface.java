@@ -4,12 +4,12 @@ import java.util.Map;
 
 public interface ReceiveMessageInterface extends Remote
 {
-    String verifyPIN(String cardNumber, int pinVal);
-    boolean withdrawMoney(String cardNumber, int val);
-    Integer getBalance(String cardNumber);
-    boolean changePIN(String cardNumber, int newPIN);
-    boolean replenishAccount(String cardNumber, int val);
-    boolean transfer(String from, String to, int val);
-    boolean setAutoTransfer(String from, String to, int val, Date date);
-    Map<String, Integer> messageToPerform(String src, String out, int amount, int type, Date date);
+    String verifyPIN(String cardNumber, int pinVal) throws RemoteException;
+    boolean withdrawMoney(String cardNumber, int val) throws RemoteException;
+    Integer getBalance(String cardNumber) throws RemoteException;
+    boolean changePIN(String cardNumber, int newPIN) throws RemoteException;
+    boolean replenishAccount(String cardNumber, int val) throws RemoteException;
+    boolean transfer(String from, String to, int val) throws RemoteException;
+    boolean setAutoTransfer(String from, String to, int val, Date date) throws RemoteException;
+    Map<String, Integer> messageToPerform(String src, String out, int amount, int type, Date date) throws RemoteException;
 }
