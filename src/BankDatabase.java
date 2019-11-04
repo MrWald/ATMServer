@@ -16,20 +16,26 @@ class BankDatabase
     String[] getClientData(String cardNum) throws SQLException
     {
         Statement statement = connection.createStatement();
-        ResultSet res = statement.executeQuery("SELECT PIN, username, balance, limit FROM accounts WHERE number='" + cardNum + "'");
-        if(!res.next())
+        ResultSet accountData = statement.executeQuery("SELECT PIN, username, balance, limit FROM accounts WHERE number='" + cardNum + "'");
+        if(!accountData.next())
+            return null;
+        ResultSet userData = statement.executeQuery("SELECT firstName FROM users WHERE username='" + accountData.getString(1) + "'");
+        if(!userData.next())
             return null;
         String[] data = new String[4];
-        data[0] = res.getString(0);
-        data[1] = res.getString(1);
-        data[2] = res.getString(2);
-        data[3] = res.getString(3);
+        data[0] = accountData.getString(0);
+        data[1] = userData.getString(0);
+        data[2] = accountData.getString(2);
+        data[3] = accountData.getString(3);
         return data;
     }
 
     boolean setClientData(String cardNum, String[] newData) throws SQLException
     {
         Statement statement = connection.createStatement();
-        return statement.execute("UPDATE accounts SET PIN='" + newData[0] + "', username='" + newData[1] + "', balance='" + newData[2] + "', limit='" + newData[3] + "' WHERE number='" + cardNum + "'");
+        ResultSet rs = statement.executeQuery("SELECT username FROM accounts WHERE number='" + cardNum + "'");
+        rs.next();
+        String username = rs.getString(0);
+        return statement.execute("UPDATE accounts SET PIN='" + newData[0] + "', balance='" + newData[2] + "', limit='" + newData[3] + "' WHERE number='" + cardNum + "'") && statement.execute("UPDATE users SET firstName='" + newData[1] + "' WHERE username='" + username + "'");
     }
 }
