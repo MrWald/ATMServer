@@ -1,3 +1,4 @@
+package kmalfa;
 import java.sql.*;
 import org.flywaydb.core.Flyway;
 

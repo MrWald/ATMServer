@@ -90,3 +90,7 @@ fabric.properties
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+!flyway-core-6.0.8.jar
+!mysql-connector-java-8.0.18.jar
+!mssql-jdbc-7.4.1.jre8.jar

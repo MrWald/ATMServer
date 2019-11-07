@@ -1,3 +1,4 @@
+package kmalfa;
 import java.rmi.*;
 import java.util.Date;
 import java.util.Map;
