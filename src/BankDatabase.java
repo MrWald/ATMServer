@@ -1,5 +1,7 @@
 import java.sql.*;
 
+import org.flywaydb.core.Flyway;
+
 class BankDatabase
 {
     private static final String CONNECTION_STRING = "jdbc:mysql://localhost:3306/bank";
@@ -11,6 +13,9 @@ class BankDatabase
     BankDatabase() throws SQLException
     {
         connection = DriverManager.getConnection(CONNECTION_STRING, USERNAME, PASSWORD);
+
+        Flyway flyway = Flyway.configure().dataSource(CONNECTION_STRING, USERNAME, PASSWORD).load();
+        flyway.migrate();
     }
 
     String[] getClientData(String cardNum) throws SQLException
