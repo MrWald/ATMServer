@@ -4,10 +4,10 @@ public class AutoTransfer
 {
     private String from;
     private String to;
-    private int value;
+    private float value;
     private Date period;
 
-    AutoTransfer(String from, String to, int value, Date period)
+    AutoTransfer(String from, String to, float value, Date period)
     {
         this.from = from;
         this.to = to;
@@ -23,7 +23,7 @@ public class AutoTransfer
         return to;
     }
 
-    int getValue() {
+    float getValue() {
         return value;
     }
 

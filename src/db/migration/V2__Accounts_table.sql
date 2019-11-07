@@ -1,8 +1,8 @@
-create table accounts (
-	card_number varchar(16) not null primary key,
-	PIN varchar(4) not null,
-	balance Double not null,
-	money_limit Double not null,
-	username varchar(50) not null,
-	foreign key(username) references users(username)
+CREATE TABLE accounts (
+	card_number VARCHAR(16) PRIMARY KEY,
+	pin VARCHAR(4) NOT NULL,
+	balance FLOAT NOT NULL,
+	money_limit FLOAT NOT NULL,
+	username VARCHAR(50) NOT NULL,
+	FOREIGN KEY(username) REFERENCES users(username)
 );

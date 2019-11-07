@@ -7,5 +7,11 @@
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/bank</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="Microsoft SQL Server (jTds) - bank@kmalfa.database.windows.net" uuid="300c1ade-37c8-4234-8c87-84a9084ce5dc">
+      <driver-ref>sqlserver.jtds</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>net.sourceforge.jtds.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:jtds:sqlserver://kmalfa.database.windows.net:1433/bank</jdbc-url>
+    </data-source>
   </component>
 </project>

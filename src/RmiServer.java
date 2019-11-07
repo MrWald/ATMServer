@@ -81,7 +81,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean withdrawMoney(String cardNumber, int withdrawMoney)
+    public boolean withdrawMoney(String cardNumber, float withdrawMoney)
     {
         String[] data;
         try
@@ -92,8 +92,8 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             return false;
         }
-        int bal = Integer.parseInt(data[2]);
-        int lim = Integer.parseInt(data[3]);
+        float bal = Float.parseFloat(data[2]);
+        float lim = Float.parseFloat(data[3]);
         if (bal - withdrawMoney < lim)
             return false;
         bal -= withdrawMoney;
@@ -109,7 +109,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public Integer getBalance(String cardNumber)
+    public Float getBalance(String cardNumber)
     {
         String[] data;
         try
@@ -121,7 +121,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             return null;
         }
         System.out.println("Balance Info: " + data[2]);
-        return Integer.parseInt(data[2]);
+        return Float.parseFloat(data[2]);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean replenishAccount(String cardNumber, int val)
+    public boolean replenishAccount(String cardNumber, float val)
     {
         String[] data;
         try
@@ -160,7 +160,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             return false;
         }
-        int bal = Integer.parseInt(data[2]);
+        float bal = Float.parseFloat(data[2]);
         bal += val;
         data[2] = String.valueOf(bal);
         try
@@ -174,13 +174,13 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean transfer(String from, String to, int val)
+    public boolean transfer(String from, String to, float val)
     {
         return withdrawMoney(from, val) && replenishAccount(to, val);
     }
 
     @Override
-    public boolean setAutoTransfer(String from, String to, int val, Date date)
+    public boolean setAutoTransfer(String from, String to, float val, Date date)
     {
         AtomicBoolean res = new AtomicBoolean(false);
         Thread autoTransfer = new Thread(() -> {
@@ -221,7 +221,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean removeAutoTransfer(String from, String to, int val, Date date)
+    public boolean removeAutoTransfer(String from, String to, float val, Date date)
     {
         try
         {
@@ -237,7 +237,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public Map<String, String> messageToPerform(String src, String out, int val, int type, Date date)
+    public Map<String, String> messageToPerform(String src, String out, float val, int type, Date date)
     {
         mp.clear();
         switch (type)
@@ -252,7 +252,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
                     mp.put("isSuccess", "0");
                 }
             case 2:
-                Integer bal = getBalance(src);
+                Float bal = getBalance(src);
                 if (bal != null)
                 {
                     mp.put("isSuccess", "1");
@@ -264,7 +264,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
                     mp.put("balance", "null");
                 }
             case 3:
-                if (changePIN(src, val))
+                if (changePIN(src, (int)val))
                 {
                     mp.put("isSuccess", "1");
                 }
