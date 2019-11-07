@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -30,16 +34,21 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         try
         {
             // get the address of this host.
-            new RmiServer(InetAddress.getLocalHost().getHostAddress(), PORT);
+            String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine(); //you get the IP as a String
+            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT);
         }
         catch (RemoteException e)
         {
-            System.err.println("Cannot get the Server registered. Exiting" + e.getMessage());
+            System.err.println("Cannot get the Server registered. Exiting..." + e.getMessage());
             System.exit(1);
         }
         catch(UnknownHostException e)
         {
-            System.err.println("Cannot get internet address.");
+            System.err.println("Cannot get internet address: " + e.getMessage());
+        }
+        catch(IOException e)
+        {
+            System.err.println("Cannot get external ip address: " + e.getMessage());
         }
         catch (SQLException e)
         {
@@ -198,14 +207,17 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     public String getAutoTransfers(String from)
     {
         StringBuilder res = new StringBuilder();
+        res.append('[');
         for (AutoTransfer at : autoTransfers.keySet())
         {
+            if(res.length()>1)
+                res.append(',');
             if (at.getFrom().equals(from))
             {
-                res.append("To:").append(at.getTo()).append(";Value:").append(at.getValue()).append(";Period:").append(at.getPeriod().toString()).append("\n");
+                res.append("{to:").append(at.getTo()).append(",value:").append(at.getValue()).append(",period:").append(at.getPeriod().toString()).append('}');
             }
         }
-        return res.toString();
+        return res.append(']').toString();
     }
 
     @Override
@@ -213,8 +225,9 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     {
         try
         {
-            autoTransfers.get(new AutoTransfer(from, to, val, date)).join();
-            autoTransfers.remove(new AutoTransfer(from, to, val, date));
+            AutoTransfer at = new AutoTransfer(from, to, val, date);
+            autoTransfers.get(at).join();
+            autoTransfers.remove(at);
         }
         catch(Exception e)
         {

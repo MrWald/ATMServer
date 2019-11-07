@@ -15,7 +15,6 @@ public class AutoTransfer
         this.period = period;
     }
 
-
     String getFrom() {
         return from;
     }
