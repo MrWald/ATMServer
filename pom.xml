@@ -37,36 +37,4 @@
             <systemPath>${project.basedir}/src/main/resources/mysql-connector-java-8.0.18.jar</systemPath>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <mainClass>kmalfa.RmiServer</mainClass>
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>
-                            ${project.build.outputDirectory}/flyway-core-6.0.8.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${project.build.outputDirectory}/mssql-jdbc-7.4.1.jre8.jar
-                        </additionalClasspathElement>
-                        <additionalClasspathElement>
-                            ${project.build.outputDirectory}/mysql-connector-java-8.0.18.jar
-                        </additionalClasspathElement>
-                    </additionalClasspathElements>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
