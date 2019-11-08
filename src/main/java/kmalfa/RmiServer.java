@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
     private Map<String, String> mp = new HashMap<>();
-    private static final int PORT_HTTP = 80/*3232*/, PORT_HTTPS = 443; // registry port
+    private static final int PORT = 3232; // registry port
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
@@ -37,7 +37,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             // get the address of this host.
             String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine(); //you get the IP as a String
-            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT_HTTPS);
+            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT);
         }
         catch (RemoteException e)
         {
