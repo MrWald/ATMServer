@@ -16,6 +16,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 {
     private Map<String, String> mp = new HashMap<>();
     private static final int PORT = 3232; // registry port
+    private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
 
@@ -25,7 +26,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         // create the registry and bind the name and object.
         // rmi registry for lookup the remote objects.
         Registry registry = LocateRegistry.createRegistry(port);
-        registry.rebind("bankServer", this);
+        registry.rebind(REGISTRY_NAME, this);
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
     }
