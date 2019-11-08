@@ -37,7 +37,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             // get the address of this host.
             String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine(); //you get the IP as a String
-            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT_HTTP);
+            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT_HTTPS);
         }
         catch (RemoteException e)
         {
