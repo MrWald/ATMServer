@@ -30,17 +30,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="flyway-core-6.0.8" level="project" />
     <orderEntry type="library" name="mssql-jdbc-7.4.1.jre8" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.flyway.core:flyway:6.0.8">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/src/main/resources/flyway-core-6.0.8.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library">
       <library name="Maven: com.mssql.jdbc:mssql:7.4.1">
         <CLASSES>

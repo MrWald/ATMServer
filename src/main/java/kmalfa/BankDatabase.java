@@ -1,7 +1,5 @@
 package kmalfa;
 
-import org.flywaydb.core.Flyway;
-
 import java.sql.*;
 
 class BankDatabase {
@@ -13,8 +11,6 @@ class BankDatabase {
 
     BankDatabase() throws SQLException {
         connection = DriverManager.getConnection(CONNECTION_STRING, USERNAME, PASSWORD);
-        Flyway flyway = Flyway.configure().dataSource(CONNECTION_STRING, USERNAME, PASSWORD).load();
-        flyway.migrate();
     }
 
     String[] getClientData(String cardNum) throws SQLException {

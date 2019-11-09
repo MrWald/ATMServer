@@ -4,5 +4,5 @@ CREATE TABLE accounts (
 	balance FLOAT NOT NULL,
 	money_limit FLOAT NOT NULL,
 	username VARCHAR(50) NOT NULL,
-	FOREIGN KEY(username) REFERENCES users(username)
+	FOREIGN KEY(username) REFERENCES users(username) ON DELETE CASCADE ON UPDATE CASCADE
 );
