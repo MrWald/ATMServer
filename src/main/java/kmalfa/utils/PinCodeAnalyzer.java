@@ -7,16 +7,16 @@ public class PinCodeAnalyzer {
         int newPin = pin;
         switch (operation) {
             case 1:
-                newPin = (int)(CONSTANTS[0] * (CONSTANTS[2] - pin));
+                newPin = Math.round(CONSTANTS[0] * (CONSTANTS[2] - (float)pin));
                 break;
             case 2:
-                newPin = (int)(CONSTANTS[3] / (CONSTANTS[5] + pin));
+                newPin = Math.round(CONSTANTS[3] / (CONSTANTS[5] + (float)pin));
                 break;
             case 3:
-                newPin = (int)(CONSTANTS[4] + CONSTANTS[1] - pin);
+                newPin = Math.round(CONSTANTS[4] + CONSTANTS[1] - (float)pin);
                 break;
             case 4:
-                newPin = (int)(CONSTANTS[2] - CONSTANTS[5] + pin);
+                newPin = Math.round(CONSTANTS[2] - CONSTANTS[5] + (float)pin);
                 break;
             //In future may be more operations
         }
@@ -28,16 +28,16 @@ public class PinCodeAnalyzer {
         int codedPin = actualPin;
         switch (operation) {
             case 1:
-                codedPin = (int)(CONSTANTS[2] - (actualPin / CONSTANTS[0]));
+                codedPin = Math.round(CONSTANTS[2] - ((float)actualPin / CONSTANTS[0]));
                 break;
             case 2:
-                codedPin = (int)((CONSTANTS[3] / actualPin) - CONSTANTS[5]);
+                codedPin = Math.round((CONSTANTS[3] / (float)actualPin) - CONSTANTS[5]);
                 break;
             case 3:
-                codedPin = (int)(CONSTANTS[4] + CONSTANTS[1] - actualPin);
+                codedPin = Math.round(CONSTANTS[4] + CONSTANTS[1] - (float)actualPin);
                 break;
             case 4:
-                codedPin = (int)(actualPin - CONSTANTS[2] + CONSTANTS[5]);
+                codedPin = Math.round((float)actualPin - CONSTANTS[2] + CONSTANTS[5]);
                 break;
             //In future may be more operations
         }
