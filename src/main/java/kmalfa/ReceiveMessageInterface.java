@@ -1,7 +1,6 @@
 package kmalfa;
 import java.rmi.*;
 import java.util.Date;
-import java.util.Map;
 
 public interface ReceiveMessageInterface extends Remote
 {
@@ -14,5 +13,4 @@ public interface ReceiveMessageInterface extends Remote
     boolean setAutoTransfer(String from, String to, float val, Date date) throws RemoteException;
     String getAutoTransfers(String from) throws RemoteException;
     boolean removeAutoTransfer(String from, String to, float val, Date date) throws RemoteException;
-    Map<String, String> messageToPerform(String src, String out, float amount, int type, Date date) throws RemoteException;
 }

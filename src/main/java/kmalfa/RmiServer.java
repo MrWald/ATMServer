@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
-    private Map<String, String> mp = new HashMap<>();
     private static final int PORT = 1099;
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
@@ -249,93 +248,5 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             return false;
         }
         return true;
-    }
-
-    @Override
-    public Map<String, String> messageToPerform(String src, String out, float val, int type, Date date)
-    {
-        mp.clear();
-        switch (type)
-        {
-            case 1:
-                if (withdrawMoney(src, val))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-            case 2:
-                Float bal = getBalance(src);
-                if (bal != null)
-                {
-                    mp.put("isSuccess", "1");
-                    mp.put("balance", bal.toString());
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                    mp.put("balance", "null");
-                }
-            case 3:
-                if (changePIN(src, (int)val))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-            case 4:
-                if (replenishAccount(src, val))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-            case 5:
-                if (transfer(src, out, val))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-            case 6:
-                if (setAutoTransfer(src, out, val, date))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-            case 7:
-                String at = getAutoTransfers(src);
-                if (at == null)
-                {
-                    mp.put("isSuccess", "0");
-                    mp.put("autoTransfers", "null");
-                }
-                else
-                {
-                    mp.put("isSuccess", "1");
-                    mp.put("autoTransfers", at);
-                }
-            case 8:
-                if (removeAutoTransfer(src, out, val, date))
-                {
-                    mp.put("isSuccess", "1");
-                }
-                else
-                {
-                    mp.put("isSuccess", "0");
-                }
-        }
-        return mp;
     }
 }
