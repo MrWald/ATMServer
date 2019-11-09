@@ -1,15 +1,14 @@
 package kmalfa;
+
 import java.util.Date;
 
-public class AutoTransfer
-{
+public class AutoTransfer {
     private String from;
     private String to;
     private float value;
     private Date period;
 
-    AutoTransfer(String from, String to, float value, Date period)
-    {
+    AutoTransfer(String from, String to, float value, Date period) {
         this.from = from;
         this.to = to;
         this.value = value;
@@ -36,7 +35,7 @@ public class AutoTransfer
     public boolean equals(Object obj) {
         if (!(obj instanceof AutoTransfer))
             return false;
-        AutoTransfer at = (AutoTransfer)obj;
+        AutoTransfer at = (AutoTransfer) obj;
         return at.getFrom().equals(this.getFrom()) && at.getTo().equals(this.getTo()) && at.getValue() == this.getValue() && at.getPeriod().equals(this.getPeriod());
     }
 }
