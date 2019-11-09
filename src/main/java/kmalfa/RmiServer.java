@@ -34,12 +34,12 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         }
         try {
             registry.bind(REGISTRY_NAME, this);
-            Naming.bind("ATMServer/" + REGISTRY_NAME, this);
+            Naming.bind(address + '/' + REGISTRY_NAME, this);
         }
         catch (AlreadyBoundException e)
         {
             registry.rebind(REGISTRY_NAME, this);
-            Naming.rebind("ATMServer/" + REGISTRY_NAME, this);
+            Naming.rebind(address + '/' + REGISTRY_NAME, this);
         }
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
@@ -49,9 +49,10 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     {
         try
         {
-            System.setProperty("java.rmi.server.hostname", "ATMServer");
             String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine();
-            new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT);
+            externalIp = externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp;
+            System.setProperty("java.rmi.server.hostname", externalIp);
+            new RmiServer(externalIp, PORT);
         }
         catch (RemoteException e)
         {
