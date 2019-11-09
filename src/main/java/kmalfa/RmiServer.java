@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -23,6 +24,9 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     private RmiServer(String address, int port) throws RemoteException, SQLException
     {
         System.setProperty("java.rmi.server.hostname", address);
+        if (System.getSecurityManager() == null) {
+            System.setSecurityManager(new RMISecurityManager());
+        }
         System.out.println("This address = " + address + ", Port = " + port);
         // create the registry and bind the name and object.
         // rmi registry for lookup the remote objects.
