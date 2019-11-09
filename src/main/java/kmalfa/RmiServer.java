@@ -25,24 +25,21 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     private RmiServer(String address, int port) throws RemoteException, SQLException, MalformedURLException {
         System.out.println("This address = " + address + ", Port = " + port);
-        //Registry registry = LocateRegistry.createRegistry(port);
-        //registry.rebind(REGISTRY_NAME, this);
         Registry registry;
         try {
-            registry = LocateRegistry.createRegistry(PORT);
+            registry = LocateRegistry.createRegistry(port);
         } catch (RemoteException e)
         {
-            registry = LocateRegistry.getRegistry(PORT);
+            registry = LocateRegistry.getRegistry(port);
         }
-        System.setProperty("java.rmi.server.hostname", address);
         try {
             registry.bind(REGISTRY_NAME, this);
-            Naming.bind(address, this);
+            Naming.bind("ATMServer/" + REGISTRY_NAME, this);
         }
         catch (AlreadyBoundException e)
         {
             registry.rebind(REGISTRY_NAME, this);
-            Naming.rebind(address, this);
+            Naming.rebind("ATMServer/" + REGISTRY_NAME, this);
         }
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
@@ -52,6 +49,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     {
         try
         {
+            System.setProperty("java.rmi.server.hostname", "ATMServer");
             String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine();
             new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT);
         }
