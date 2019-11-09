@@ -19,14 +19,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
-    private Registry registry;
 
     private RmiServer(String address, int port) throws RemoteException, SQLException
     {
+        System.setProperty("java.rmi.server.hostname", address);
         System.out.println("This address = " + address + ", Port = " + port);
         // create the registry and bind the name and object.
         // rmi registry for lookup the remote objects.
-        registry = LocateRegistry.createRegistry(port);
+        Registry registry = LocateRegistry.createRegistry(port);
         registry.rebind(REGISTRY_NAME, this);
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
