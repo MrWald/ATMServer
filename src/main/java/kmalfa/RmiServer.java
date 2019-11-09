@@ -29,8 +29,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         //Registry registry = LocateRegistry.createRegistry(port);
         //registry.rebind(REGISTRY_NAME, this);
         LocateRegistry.createRegistry(PORT);
-        System.setProperty("java.rmi.server.hostname", address);
-        Naming.rebind("rmi://localhost/" + REGISTRY_NAME, this);
+        System.setProperty("java.rmi.server.hostname", address + ':' + PORT);
+        try {
+            Naming.bind("rmi://localhost:" + PORT + '/' + REGISTRY_NAME, this);
+        }
+        catch (AlreadyBoundException e)
+        {
+            Naming.rebind("rmi://localhost:" + PORT + '/' + REGISTRY_NAME, this);
+        }
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
     }
