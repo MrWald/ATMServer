@@ -3,11 +3,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -23,7 +21,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
 
-    private RmiServer(String address, int port) throws RemoteException, SQLException, MalformedURLException {
+    private RmiServer(String address, int port) throws RemoteException, SQLException {
         System.out.println("This address = " + address + ", Port = " + port);
         Registry registry;
         try {
@@ -34,12 +32,10 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         }
         try {
             registry.bind(REGISTRY_NAME, this);
-            Naming.bind(address + '/' + REGISTRY_NAME, this);
         }
         catch (AlreadyBoundException e)
         {
             registry.rebind(REGISTRY_NAME, this);
-            Naming.rebind(address + '/' + REGISTRY_NAME, this);
         }
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
@@ -51,7 +47,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine();
             externalIp = externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp;
-            System.setProperty("java.rmi.server.hostname", externalIp);
+            System.setProperty("java.rmi.server.hostname", externalIp/*"localhost"*/);
             new RmiServer(externalIp, PORT);
         }
         catch (RemoteException e)
@@ -86,6 +82,8 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         {
             return null;
         }
+        if (data == null)
+            return null;
         System.out.println(data[1] + "  " + pinVal);
         if (data[0].equals(String.valueOf(pinVal)))
         {
