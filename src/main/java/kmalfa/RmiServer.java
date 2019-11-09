@@ -29,7 +29,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         //Registry registry = LocateRegistry.createRegistry(port);
         //registry.rebind(REGISTRY_NAME, this);
         LocateRegistry.createRegistry(PORT);
-        System.setProperty("java.rmi.server.hostname", address + ':' + PORT);
+        System.setProperty("java.rmi.server.hostname", address);
         try {
             Naming.bind("rmi://localhost:" + PORT + '/' + REGISTRY_NAME, this);
         }
