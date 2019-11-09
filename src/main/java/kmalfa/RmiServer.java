@@ -1,5 +1,7 @@
 package kmalfa;
 
+import kmalfa.utils.PinCodeAnalyzer;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,7 +18,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface {
     private static final int PORT = 1099;
@@ -67,7 +68,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public String verifyPIN(String cardNumber, int pinVal) {
+    public String verifyPIN(String cardNumber, int pinVal, int operation) {
         String[] data;
         try {
             data = bankDB.getClientData(cardNumber);
@@ -76,6 +77,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         }
         if (data == null)
             return null;
+        pinVal = PinCodeAnalyzer.getPin(pinVal, operation);
         System.out.println(data[1] + "  " + pinVal);
         if (data[0].equals(String.valueOf(pinVal))) {
             return data[1];
@@ -85,28 +87,34 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean withdrawMoney(String cardNumber, float withdrawMoney) {
+    public boolean withdrawMoney(String cardNumber, int pinVal, int operation, float withdrawMoney) {
+        return verifyPIN(cardNumber, pinVal, operation) != null && withdrawMoney(cardNumber, withdrawMoney);
+    }
+
+    private boolean withdrawMoney(String cardNum, float val) {
         String[] data;
         try {
-            data = bankDB.getClientData(cardNumber);
+            data = bankDB.getClientData(cardNum);
         } catch (SQLException e) {
             return false;
         }
         float bal = Float.parseFloat(data[2]);
         float lim = Float.parseFloat(data[3]);
-        if (bal - withdrawMoney < lim)
+        if (bal - val < lim)
             return false;
-        bal -= withdrawMoney;
+        bal -= val;
         data[2] = String.valueOf(round(bal));
         try {
-            return bankDB.setClientData(cardNumber, data);
+            return bankDB.setClientData(cardNum, data);
         } catch (Exception e) {
             return false;
         }
     }
 
     @Override
-    public Float getBalance(String cardNumber) {
+    public Float getBalance(String cardNumber, int pinVal, int operation) {
+        if (verifyPIN(cardNumber, pinVal, operation) == null)
+            return null;
         String[] data;
         try {
             data = bankDB.getClientData(cardNumber);
@@ -118,7 +126,9 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean changePIN(String cardNumber, int newPIN) {
+    public boolean changePIN(String cardNumber, int oldPin, int newPIN, int operation) {
+        if (verifyPIN(cardNumber, oldPin, operation) == null)
+            return false;
         System.out.println("Card: " + cardNumber);
         String[] data;
         try {
@@ -135,10 +145,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean replenishAccount(String cardNumber, float val) {
+    public boolean replenishAccount(String cardNumber, int pinVal, int operation, float val) {
+        return verifyPIN(cardNumber, pinVal, operation) != null && replenishAccount(cardNumber, val);
+    }
+
+    private boolean replenishAccount(String cardNum, float val) {
         String[] data;
         try {
-            data = bankDB.getClientData(cardNumber);
+            data = bankDB.getClientData(cardNum);
         } catch (SQLException e) {
             return false;
         }
@@ -146,38 +160,41 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         bal += val;
         data[2] = String.valueOf(round(bal));
         try {
-            return bankDB.setClientData(cardNumber, data);
+            return bankDB.setClientData(cardNum, data);
         } catch (Exception e) {
             return false;
         }
     }
 
     @Override
-    public boolean transfer(String from, String to, float val) {
-        return withdrawMoney(from, val) && replenishAccount(to, val);
+    public boolean transfer(String from, String to, int pinVal, int operation, float val) {
+        return withdrawMoney(from, pinVal, operation, val) && replenishAccount(to, val);
     }
 
     @Override
-    public boolean setAutoTransfer(String from, String to, float val, Date date) {
-        AtomicBoolean res = new AtomicBoolean(false);
+    public boolean setAutoTransfer(String from, String to, int pinVal, int operation, float val, Date date) {
+        if (verifyPIN(from, pinVal, operation) == null)
+            return false;
         Thread autoTransfer = new Thread(() -> {
             while (true) {
                 try {
                     Thread.sleep(date.getTime());
                 } catch (InterruptedException e) {
-                    res.set(false);
                     e.printStackTrace();
                 }
-                res.set(transfer(from, to, val));
+                withdrawMoney(from,  val);
+                replenishAccount(to, val);
             }
         });
         autoTransfers.put(new AutoTransfer(from, to, val, date), autoTransfer);
         autoTransfer.start();
-        return res.get();
+        return true;
     }
 
     @Override
-    public String getAutoTransfers(String from) {
+    public String getAutoTransfers(String from, int pinVal, int operation) {
+        if (verifyPIN(from, pinVal, operation) == null)
+            return null;
         StringBuilder res = new StringBuilder();
         res.append('[');
         for (AutoTransfer at : autoTransfers.keySet()) {
@@ -191,7 +208,9 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean removeAutoTransfer(String from, String to, float val, Date date) {
+    public boolean removeAutoTransfer(String from, String to, int pinVal, int operation, float val, Date date) {
+        if (verifyPIN(from, pinVal, operation) == null)
+            return false;
         try {
             AutoTransfer at = new AutoTransfer(from, to, val, date);
             autoTransfers.get(at).join();
