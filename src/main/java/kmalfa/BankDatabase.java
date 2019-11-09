@@ -43,6 +43,8 @@ class BankDatabase
         if(!rs.next())
             return false;
         String username = rs.getString("username");
-        return statement.execute("UPDATE accounts SET pin='" + newData[0] + "', balance=" + newData[2] + ", money_limit=" + newData[3] + " WHERE card_number='" + cardNum + "';") && statement.execute("UPDATE users SET first_name='" + newData[1] + "' WHERE username='" + username + "';");
+        statement.executeUpdate("UPDATE accounts SET pin='" + newData[0] + "', balance=" + newData[2] + ", money_limit=" + newData[3] + " WHERE card_number='" + cardNum + "';");
+        statement.executeUpdate("UPDATE users SET first_name='" + newData[1] + "' WHERE username='" + username + "';");
+        return true;
     }
 }
