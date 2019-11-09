@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
-import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -19,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
     private Map<String, String> mp = new HashMap<>();
-    private static final int PORT = 3232;
+    private static final int PORT = 1099;
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
@@ -28,14 +27,22 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         System.out.println("This address = " + address + ", Port = " + port);
         //Registry registry = LocateRegistry.createRegistry(port);
         //registry.rebind(REGISTRY_NAME, this);
-        LocateRegistry.createRegistry(PORT);
+        Registry registry;
+        try {
+            registry = LocateRegistry.createRegistry(PORT);
+        } catch (RemoteException e)
+        {
+            registry = LocateRegistry.getRegistry(PORT);
+        }
         System.setProperty("java.rmi.server.hostname", address);
         try {
-            Naming.bind("rmi://localhost:" + PORT + '/' + REGISTRY_NAME, this);
+            registry.bind(REGISTRY_NAME, this);
+            Naming.bind(address, this);
         }
         catch (AlreadyBoundException e)
         {
-            Naming.rebind("rmi://localhost:" + PORT + '/' + REGISTRY_NAME, this);
+            registry.rebind(REGISTRY_NAME, this);
+            Naming.rebind(address, this);
         }
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
