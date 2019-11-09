@@ -3,8 +3,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,22 +19,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface
 {
     private Map<String, String> mp = new HashMap<>();
-    private static final int PORT = 3232; // registry port
+    private static final int PORT = 3232;
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
     private Map<AutoTransfer, Thread> autoTransfers;
 
-    private RmiServer(String address, int port) throws RemoteException, SQLException
-    {
-        System.setProperty("java.rmi.server.hostname", address);
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
-        }
+    private RmiServer(String address, int port) throws RemoteException, SQLException, MalformedURLException {
         System.out.println("This address = " + address + ", Port = " + port);
-        // create the registry and bind the name and object.
-        // rmi registry for lookup the remote objects.
-        Registry registry = LocateRegistry.createRegistry(port);
-        registry.rebind(REGISTRY_NAME, this);
+        //Registry registry = LocateRegistry.createRegistry(port);
+        //registry.rebind(REGISTRY_NAME, this);
+        LocateRegistry.createRegistry(PORT);
+        System.setProperty("java.rmi.server.hostname", address);
+        Naming.rebind("rmi://localhost/" + REGISTRY_NAME, this);
         bankDB = new BankDatabase();
         autoTransfers = new HashMap<>();
     }
@@ -40,8 +39,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     {
         try
         {
-            // get the address of this host.
-            String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine(); //you get the IP as a String
+            String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine();
             new RmiServer(externalIp.length()==0 ? InetAddress.getLocalHost().getHostAddress() : externalIp, PORT);
         }
         catch (RemoteException e)
