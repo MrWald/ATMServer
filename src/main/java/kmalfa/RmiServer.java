@@ -136,7 +136,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         } catch (SQLException e) {
             return false;
         }
-        data[0] = String.valueOf(newPIN);
+        data[0] = String.valueOf(PinCodeAnalyzer.getPin(newPIN, operation));
         try {
             return bankDB.setClientData(cardNumber, data);
         } catch (Exception e) {
@@ -168,13 +168,21 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     @Override
     public boolean transfer(String from, String to, int pinVal, int operation, float val) {
-        return withdrawMoney(from, pinVal, operation, val) && replenishAccount(to, val);
+        try {
+            return bankDB.getClientData(to) != null && withdrawMoney(from, pinVal, operation, val) && replenishAccount(to, val);
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean setAutoTransfer(String from, String to, int pinVal, int operation, float val, Date date) {
-        if (verifyPIN(from, pinVal, operation) == null)
+        try {
+            if (verifyPIN(from, pinVal, operation) == null || bankDB.getClientData(to) == null)
+                return false;
+        } catch (SQLException e) {
             return false;
+        }
         Thread autoTransfer = new Thread(() -> {
             while (true) {
                 try {

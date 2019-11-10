@@ -23,8 +23,11 @@ public class PinCodeAnalyzer {
         return actualPin;
     }
 
-    public static int[] generatePinOp (int actualPin) {
-        int operation = (int)(4 * Math.random() + 1);
+    public static int generateOp () {
+        return (int)(4 * Math.random() + 1);
+    }
+
+    public static int generatePin (int actualPin, int operation) {
         int codedPin = actualPin;
         switch (operation) {
             case 1:
@@ -41,6 +44,6 @@ public class PinCodeAnalyzer {
                 break;
             //In future may be more operations
         }
-        return new int[]{codedPin, operation};
+        return codedPin;
     }
 }
