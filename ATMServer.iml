@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_11">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -11,7 +11,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="mysql-connector-java-8.0.18" level="project" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
@@ -30,24 +29,15 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="mssql-jdbc-7.4.1.jre8" level="project" />
     <orderEntry type="module-library">
       <library name="Maven: com.mssql.jdbc:mssql:7.4.1">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/src/main/resources/mssql-jdbc-7.4.1.jre8.jar!/" />
+          <root url="jar://$MODULE_DIR$/src/main/resources/mssql-jdbc-7.4.1.jre11.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Maven: com.mysql.connector:mysql:8.0.18">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/src/main/resources/mysql-connector-java-8.0.18.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="mssql-jdbc-7.4.1.jre11" level="project" />
   </component>
 </module>

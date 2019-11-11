@@ -103,5 +103,4 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
-!mysql-connector-java-8.0.18.jar
-!mssql-jdbc-7.4.1.jre8.jar
+!mssql-jdbc-7.4.1.jre11.jar
