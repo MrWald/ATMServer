@@ -22,5 +22,5 @@ public interface ReceiveMessageInterface extends Remote {
 
     String getAutoTransfers(String from, int pin, int operation) throws RemoteException;
 
-    boolean removeAutoTransfer(String from, String to, int pin, int operation, float val, Date date) throws RemoteException;
+    boolean removeAutoTransfer(String from, int pinVal, int operation, int index) throws RemoteException;
 }

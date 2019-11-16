@@ -7,12 +7,27 @@ public class AutoTransfer {
     private String to;
     private float value;
     private Date period;
+    private boolean live;
+    private RmiServer owner;
 
-    AutoTransfer(String from, String to, float value, Date period) {
+    AutoTransfer(String from, String to, float value, Date period, RmiServer owner) {
         this.from = from;
         this.to = to;
         this.value = value;
         this.period = period;
+        live = true;
+        this.owner = owner;
+        new Thread(() -> {
+            while (live) {
+                try {
+                    Thread.sleep(this.period.getTime());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                this.owner.withdrawMoney(this.from, this.value);
+                this.owner.replenishAccount(this.to, this.value);
+            }
+        }).start();
     }
 
     String getFrom() {
@@ -29,6 +44,10 @@ public class AutoTransfer {
 
     Date getPeriod() {
         return period;
+    }
+
+    void stop() {
+        live = false;
     }
 
     @Override

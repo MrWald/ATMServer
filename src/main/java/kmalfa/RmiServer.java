@@ -15,15 +15,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface {
     private static final int PORT = 1099;
     private static final String REGISTRY_NAME = "bankServer";
     private BankDatabase bankDB;
-    private Map<AutoTransfer, Thread> autoTransfers;
+    private List<AutoTransfer> autoTransfers;
 
     private RmiServer(String address, int port) throws RemoteException, SQLException {
         System.out.println("This address = " + address + ", Port = " + port);
@@ -39,7 +39,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             registry.rebind(REGISTRY_NAME, this);
         }
         bankDB = new BankDatabase();
-        autoTransfers = new HashMap<>();
+        autoTransfers = new ArrayList<>();
     }
 
     static public void main(String[] args) {
@@ -91,7 +91,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         return verifyPIN(cardNumber, pinVal, operation) != null && withdrawMoney(cardNumber, withdrawMoney);
     }
 
-    private boolean withdrawMoney(String cardNum, float val) {
+    boolean withdrawMoney(String cardNum, float val) {
         String[] data;
         try {
             data = bankDB.getClientData(cardNum);
@@ -149,7 +149,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         return verifyPIN(cardNumber, pinVal, operation) != null && replenishAccount(cardNumber, val);
     }
 
-    private boolean replenishAccount(String cardNum, float val) {
+    boolean replenishAccount(String cardNum, float val) {
         String[] data;
         try {
             data = bankDB.getClientData(cardNum);
@@ -183,19 +183,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         } catch (SQLException e) {
             return false;
         }
-        Thread autoTransfer = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(date.getTime());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                withdrawMoney(from,  val);
-                replenishAccount(to, val);
-            }
-        });
-        autoTransfers.put(new AutoTransfer(from, to, val, date), autoTransfer);
-        autoTransfer.start();
+        autoTransfers.add(new AutoTransfer(from, to, val, date, this));
         return true;
     }
 
@@ -205,7 +193,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             return null;
         StringBuilder res = new StringBuilder();
         res.append('[');
-        for (AutoTransfer at : autoTransfers.keySet()) {
+        for (AutoTransfer at : autoTransfers) {
             if (res.length() > 1)
                 res.append(',');
             if (at.getFrom().equals(from)) {
@@ -216,13 +204,12 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
 
     @Override
-    public boolean removeAutoTransfer(String from, String to, int pinVal, int operation, float val, Date date) {
+    public boolean removeAutoTransfer(String from, int pinVal, int operation, int index) {
         if (verifyPIN(from, pinVal, operation) == null)
             return false;
         try {
-            AutoTransfer at = new AutoTransfer(from, to, val, date);
-            autoTransfers.get(at).join();
-            autoTransfers.remove(at);
+            autoTransfers.get(index).stop();
+            autoTransfers.remove(index);
         } catch (Exception e) {
             return false;
         }
