@@ -197,7 +197,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             if (res.length() > 1)
                 res.append(',');
             if (at.getFrom().equals(from)) {
-                res.append("{to:").append(at.getTo()).append(",value:").append(at.getValue()).append(",period:").append(at.getPeriod().toString()).append('}');
+                res.append("{to:'").append(at.getTo()).append("',value:'").append(at.getValue()).append("',period:'").append(at.getPeriod().getTime()).append("'}");
             }
         }
         return res.append(']').toString();
