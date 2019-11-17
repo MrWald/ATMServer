@@ -48,6 +48,11 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             externalIp = externalIp.length() == 0 ? InetAddress.getLocalHost().getHostAddress() : externalIp;
             System.setProperty("java.rmi.server.hostname", externalIp/*"localhost"*/);
             new RmiServer(externalIp, PORT);
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            do {
+                System.out.println("Enter 'stop' to stop the server");
+            } while (!in.readLine().toLowerCase().equals("stop"));
+            in.close();
         } catch (RemoteException e) {
             System.err.println("Cannot get the Server registered. Exiting..." + e.getMessage());
             System.exit(1);
