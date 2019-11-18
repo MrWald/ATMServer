@@ -20,6 +20,11 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>7.4.1.jre11</version>
         </dependency>
+        <dependency>
+            <groupId>org.sonarsource.java</groupId>
+            <artifactId>sonar-java-plugin</artifactId>
+            <version>5.14.0.18788</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -36,7 +41,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>kmalfa.RmiServer</mainClass>
+                    <mainClass>executor.Main</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -52,7 +57,7 @@
                     <dependency>
                         <groupId>com.h2database</groupId>
                         <artifactId>h2</artifactId>
-                        <version>1.4.197</version>
+                        <version>1.4.198</version>
                     </dependency>
                 </dependencies>
             </plugin>

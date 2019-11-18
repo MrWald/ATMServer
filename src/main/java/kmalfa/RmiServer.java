@@ -2,14 +2,8 @@ package kmalfa;
 
 import kmalfa.utils.PinCodeAnalyzer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -18,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class RmiServer extends java.rmi.server.UnicastRemoteObject implements ReceiveMessageInterface {
     private static final int PORT = 1099;
@@ -25,13 +20,13 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     private BankDatabase bankDB;
     private List<AutoTransfer> autoTransfers;
 
-    private RmiServer(String address, int port) throws RemoteException, SQLException {
-        System.out.println("This address = " + address + ", Port = " + port);
+    public RmiServer(String address) throws RemoteException, SQLException {
+        System.out.println("This address = " + address + ", Port = " + PORT);
         Registry registry;
         try {
-            registry = LocateRegistry.createRegistry(port);
+            registry = LocateRegistry.createRegistry(PORT);
         } catch (RemoteException e) {
-            registry = LocateRegistry.getRegistry(port);
+            registry = LocateRegistry.getRegistry(PORT);
         }
         try {
             registry.bind(REGISTRY_NAME, this);
@@ -40,30 +35,6 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
         }
         bankDB = new BankDatabase();
         autoTransfers = new ArrayList<>();
-    }
-
-    static public void main(String[] args) {
-        try {
-            String externalIp = new BufferedReader(new InputStreamReader(new URL("http://checkip.amazonaws.com").openStream())).readLine();
-            externalIp = externalIp.length() == 0 ? InetAddress.getLocalHost().getHostAddress() : externalIp;
-            System.setProperty("java.rmi.server.hostname", externalIp/*"localhost"*/);
-            new RmiServer(externalIp, PORT);
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            do {
-                System.out.println("Enter 'stop' to stop the server");
-            } while (!in.readLine().toLowerCase().equals("stop"));
-            in.close();
-        } catch (RemoteException e) {
-            System.err.println("Cannot get the Server registered. Exiting..." + e.getMessage());
-            System.exit(1);
-        } catch (UnknownHostException e) {
-            System.err.println("Cannot get internet address: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("Cannot get external ip address: " + e.getMessage());
-        } catch (SQLException e) {
-            System.err.println("Cannot connect to the database. " + e.getMessage());
-            System.exit(1);
-        }
     }
 
     private static float round(float value) {
@@ -75,34 +46,26 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     @Override
     public String verifyPIN(String cardNumber, int pinVal, int operation) {
         String[] data;
-        try {
-            data = bankDB.getClientData(cardNumber);
-        } catch (SQLException e) {
-            return null;
-        }
-        if (data == null)
-            return null;
+        data = bankDB.getClientData(cardNumber);
+        if (data.length == 0)
+            return "";
         pinVal = PinCodeAnalyzer.getPin(pinVal, operation);
         System.out.println(data[1] + "  " + pinVal);
         if (data[0].equals(String.valueOf(pinVal))) {
             return data[1];
         } else {
-            return null;
+            return "";
         }
     }
 
     @Override
     public boolean withdrawMoney(String cardNumber, int pinVal, int operation, float withdrawMoney) {
-        return verifyPIN(cardNumber, pinVal, operation) != null && withdrawMoney(cardNumber, withdrawMoney);
+        return !verifyPIN(cardNumber, pinVal, operation).isEmpty() && withdrawMoney(cardNumber, withdrawMoney);
     }
 
     boolean withdrawMoney(String cardNum, float val) {
         String[] data;
-        try {
-            data = bankDB.getClientData(cardNum);
-        } catch (SQLException e) {
-            return false;
-        }
+        data = bankDB.getClientData(cardNum);
         float bal = Float.parseFloat(data[2]);
         float lim = Float.parseFloat(data[3]);
         if (bal - val < lim)
@@ -118,29 +81,20 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     @Override
     public Float getBalance(String cardNumber, int pinVal, int operation) {
-        if (verifyPIN(cardNumber, pinVal, operation) == null)
-            return null;
+        if (verifyPIN(cardNumber, pinVal, operation).isEmpty())
+            return (float) -1;
         String[] data;
-        try {
-            data = bankDB.getClientData(cardNumber);
-        } catch (SQLException e) {
-            return null;
-        }
+        data = bankDB.getClientData(cardNumber);
         System.out.println("Balance Info: " + data[2]);
         return Float.parseFloat(data[2]);
     }
 
     @Override
     public boolean changePIN(String cardNumber, int oldPin, int newPIN, int operation) {
-        if (verifyPIN(cardNumber, oldPin, operation) == null)
+        if (verifyPIN(cardNumber, oldPin, operation).isEmpty())
             return false;
         System.out.println("Card: " + cardNumber);
-        String[] data;
-        try {
-            data = bankDB.getClientData(cardNumber);
-        } catch (SQLException e) {
-            return false;
-        }
+        String[] data = bankDB.getClientData(cardNumber);
         data[0] = String.valueOf(PinCodeAnalyzer.getPin(newPIN, operation));
         try {
             return bankDB.setClientData(cardNumber, data);
@@ -156,11 +110,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     boolean replenishAccount(String cardNum, float val) {
         String[] data;
-        try {
-            data = bankDB.getClientData(cardNum);
-        } catch (SQLException e) {
-            return false;
-        }
+        data = bankDB.getClientData(cardNum);
         float bal = Float.parseFloat(data[2]);
         bal += val;
         data[2] = String.valueOf(round(bal));
@@ -173,29 +123,21 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     @Override
     public boolean transfer(String from, String to, int pinVal, int operation, float val) {
-        try {
-            return bankDB.getClientData(to) != null && withdrawMoney(from, pinVal, operation, val) && replenishAccount(to, val);
-        } catch (SQLException e) {
-            return false;
-        }
+        return bankDB.getClientData(to) != null && withdrawMoney(from, pinVal, operation, val) && replenishAccount(to, val);
     }
 
     @Override
     public boolean setAutoTransfer(String from, String to, int pinVal, int operation, float val, Date date) {
-        try {
-            if (verifyPIN(from, pinVal, operation) == null || bankDB.getClientData(to) == null)
-                return false;
-        } catch (SQLException e) {
+        if (verifyPIN(from, pinVal, operation).isEmpty() || bankDB.getClientData(to).length == 0)
             return false;
-        }
         autoTransfers.add(new AutoTransfer(from, to, val, date, this));
         return true;
     }
 
     @Override
     public String getAutoTransfers(String from, int pinVal, int operation) {
-        if (verifyPIN(from, pinVal, operation) == null)
-            return null;
+        if (verifyPIN(from, pinVal, operation).isEmpty())
+            return "";
         StringBuilder res = new StringBuilder();
         res.append('[');
         for (AutoTransfer at : autoTransfers) {
@@ -210,7 +152,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 
     @Override
     public boolean removeAutoTransfer(String from, int pinVal, int operation, int index) {
-        if (verifyPIN(from, pinVal, operation) == null)
+        if (verifyPIN(from, pinVal, operation).isEmpty())
             return false;
         try {
             autoTransfers.get(index).stop();
@@ -219,5 +161,20 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        RmiServer rmiServer = (RmiServer) o;
+        return Objects.equals(bankDB, rmiServer.bankDB) &&
+                Objects.equals(autoTransfers, rmiServer.autoTransfers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), bankDB, autoTransfers);
     }
 }

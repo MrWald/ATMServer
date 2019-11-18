@@ -1,8 +1,10 @@
 package kmalfa;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
-public class AutoTransfer {
+class AutoTransfer implements Serializable {
     private String from;
     private String to;
     private float value;
@@ -22,7 +24,8 @@ public class AutoTransfer {
                 try {
                     Thread.sleep(this.period.getTime());
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.err.println(e.getMessage());
+                    Thread.currentThread().interrupt();
                 }
                 this.owner.withdrawMoney(this.from, this.value);
                 this.owner.replenishAccount(this.to, this.value);
@@ -51,10 +54,20 @@ public class AutoTransfer {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof AutoTransfer))
-            return false;
-        AutoTransfer at = (AutoTransfer) obj;
-        return at.getFrom().equals(this.getFrom()) && at.getTo().equals(this.getTo()) && at.getValue() == this.getValue() && at.getPeriod().equals(this.getPeriod());
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AutoTransfer that = (AutoTransfer) o;
+        return Float.compare(that.getValue(), getValue()) == 0 &&
+                live == that.live &&
+                Objects.equals(getFrom(), that.getFrom()) &&
+                Objects.equals(getTo(), that.getTo()) &&
+                Objects.equals(getPeriod(), that.getPeriod()) &&
+                Objects.equals(owner, that.owner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFrom(), getTo(), getValue(), getPeriod(), live, owner);
     }
 }

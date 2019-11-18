@@ -1,7 +1,11 @@
 package kmalfa.utils;
 
+import java.util.Random;
+
 public class PinCodeAnalyzer {
     private static final int[] CONSTANTS = {231, 455, 892, 351, 952, 116};
+
+    private PinCodeAnalyzer(){}
 
     public static int getPin (int codedPin, int operation) {
         int actualPin = codedPin;
@@ -18,13 +22,15 @@ public class PinCodeAnalyzer {
             case 4:
                 actualPin = (codedPin - CONSTANTS[2] + CONSTANTS[5]);
                 break;
+            default:
+                System.out.println("WARNING: No implementation for case " + operation);
             //In future may be more operations
         }
         return actualPin;
     }
 
     public static int generateOp () {
-        return (int)(4 * Math.random() + 1);
+        return 1 + new Random().nextInt(3);
     }
 
     public static int generatePin (int actualPin, int operation) {
@@ -42,6 +48,8 @@ public class PinCodeAnalyzer {
             case 4:
                 codedPin = CONSTANTS[2] - CONSTANTS[5] + actualPin;
                 break;
+            default:
+                System.out.println("WARNING: No implementation for case " + operation);
             //In future may be more operations
         }
         return codedPin;
